@@ -1,14 +1,18 @@
+from django.db.models import F
+
 __author__ = 'Jableader'
 
 from django.contrib.auth.models import User
+from django.shortcuts import get_object_or_404
 
 from rest_framework import viewsets, status, serializers
-from rest_framework.decorators import api_view
+from rest_framework.decorators import api_view, detail_route
 from rest_framework.permissions import IsAuthenticatedOrReadOnly
 from rest_framework.response import Response
 
 from . import models
 from .permissions import isOwnerOrReadOnly
+from . import votes
 
 
 ####    User    ####
@@ -69,6 +73,21 @@ class ListSerializer(serializers.ModelSerializer):
 
         return model
 
+class VoteSerializer(serializers.Serializer):
+    vote_token = serializers.CharField()
+    winner = serializers.PrimaryKeyRelatedField(queryset=models.Item.objects.all())
+    loser = serializers.PrimaryKeyRelatedField(queryset=models.Item.objects.all())
+
+    def validate(self, attrs):
+        if not votes.check_nonce(attrs['vote_token'], (attrs['winner'], attrs['loser'])):
+            raise serializers.ValidationError("vote_token is invalid")
+        return attrs
+
+    def save(self):
+        winner = self.validated_data['winner']
+        winner.score += 1
+        winner.save()
+
 class ListViewSet(viewsets.ModelViewSet):
     queryset = models.List.objects.all()
     serializer_class = ListSerializer
@@ -76,3 +95,21 @@ class ListViewSet(viewsets.ModelViewSet):
 
     def perform_create(self, serializer):
         serializer.save(owner=self.request.user)
+
+    @detail_route(methods=['GET'])
+    def get_pair(self, request, pk=None):
+        lst = get_object_or_404(models.List, pk=pk)
+        pair = votes.get_pair(lst)
+        nonce = votes.create_nonce(pair)
+        pair_serializer = ItemSerializer(pair, many=True)
+
+        return Response({'vote_token': nonce, 'pair': pair_serializer.data})
+
+    @detail_route(methods=['POST'], permission_classes=[])
+    def vote(self, request, pk=None):
+        serializer = VoteSerializer(data=request.data)
+        if not serializer.is_valid():
+            return Response(serializer.errors, status.HTTP_400_BAD_REQUEST)
+
+        serializer.save()
+        return Response(status=status.HTTP_200_OK)

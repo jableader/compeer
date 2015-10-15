@@ -35,7 +35,7 @@ NOTES:
 
 ### Lists
 
-You can POST to create lists, or GEt to get lists. GET returns the items as nested values.
+You can POST to create lists, or GET to get lists. GET returns the items as nested values.
 
 General structure (note the score / rank is not included right now):
 ```javascript
@@ -98,6 +98,51 @@ Note: The list is provided as an ID rather than a nested structure
 To create an item, you need to provide a caption & description in the post data. You
 will also need to provide the PK of the associated list with the parameter name `list`.  
 
+### Voting
+
+If you wish to vote, you must first make a request to the server for a pair to vote on. The server will then provide you
+with a pair, and a cryptographic token. Then when you have chosen an item to vote on you make a POST request, including
+the winner, the loser and the token. If all goes well the score will be incremented for the user and you will get back
+a HTTP_200
+
+### Getting a pair
+
+URL: `/list/<pk>/get_pair`  
+METHOD: `GET`
+RESPONSE:
+* `200 - OK` with the structure below if the response was successful
+
+#### Structure
+```javascript
+{
+    "vote_token": "3hgrbr98ro3nbr9",
+    "pair": [
+        {
+            "id": 0,
+            "caption": "Bobs Burgers",
+            "description": "Bob makes burger. Hilarity ensues"
+        },
+        {
+            "id": 1,
+            "caption": "Archer",
+            "description": "The worlds most famous secret agent"
+        }
+    ]
+}
+```
+
+### Voting on a pair
+
+URL: `/list/<pk>/vote`
+METHOD: `POST`
+RESPONSE:
+*   `200 - OK` with no body if the vote was successful
+*   `400 - Bad Request` with a body containing all the errors if it failed.
+DATA:  
+* `vote_token`:  The vote token you recieved from your get-pair request  
+* `winner`: The ID/PK of the winning item
+* `loser`: The ID/PK of the losing item
+
 ### Hello World
 
 URL: `/hello-world`  
@@ -141,6 +186,6 @@ CMP		| Jacob		| CS101   | User  | create a list     | add items to vote
 ### Iteration 3
 Done?	| Resource	| Ref     | As a  | I want to         | So I can
 ------- | ---------	| ------- | ----- | ----------------- | ---------------------------------
-OPN		| 			| CS107   | User  | vote on items/lists | engage in community voting
+WRK		| Jacob		| CS107   | User  | vote on items/lists | engage in community voting
 OPN		| 			| CS109   | User  | view a list's items sorted by rank/score | see the best/worst items on the list
 OPN		| 			| CS301   | LM    | view lists of which I am a LM | manage my lists
