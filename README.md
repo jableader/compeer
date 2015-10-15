@@ -63,7 +63,7 @@ General structure (note the score / rank is not included right now):
 
 To make a list you must be authenticated, or else you will get a 401.
 
-You need to `POST` to `/list/` with the data `caption`, `description` and optionally `action_word`.
+You need to `POST` to `/list/` with the data `title`, `description` and optionally `action_word`.
 
 
 #### Getting or updating a list
