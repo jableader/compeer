@@ -3,7 +3,7 @@ from django.db.models import F
 __author__ = 'Jableader'
 
 from django.contrib.auth.models import User
-from django.shortcuts import get_object_or_404
+from django.shortcuts import get_object_or_404, get_list_or_404
 
 from rest_framework import viewsets, status, serializers
 from rest_framework.decorators import api_view, detail_route
@@ -99,6 +99,7 @@ class ListViewSet(viewsets.ModelViewSet):
     @detail_route(methods=['GET'])
     def get_pair(self, request, pk=None):
         lst = get_object_or_404(models.List, pk=pk)
+
         pair = votes.get_pair(lst)
         nonce = votes.create_nonce(pair)
         pair_serializer = ItemSerializer(pair, many=True)
@@ -113,3 +114,21 @@ class ListViewSet(viewsets.ModelViewSet):
 
         serializer.save()
         return Response(status=status.HTTP_200_OK)
+
+    @detail_route(methods=['GET'])
+    def get_list_by_title(self, request, pk=None):
+        list = get_list_or_404(models.List, title = pk)
+        list_serializer = ListSerializer(list, many=True)
+        return Response(list_serializer.data)
+
+    @detail_route(methods=['GET'])
+    def get_list_by_user(self, request, pk=None):
+        user_id=User.objects.get(username=pk).id
+
+        list = get_list_or_404(models.List, owner_id = user_id)
+        list_serializer = ListSerializer(list, many=True)
+        return Response(list_serializer.data)
+
+
+
+
