@@ -47,13 +47,34 @@ class TestLists(APITestCase):
         l.items.create(caption='First', description='Not blank')
         l.items.create(caption='Second', description='Not blank')
 
+
         response = self.client.get('/list/%d' % l.pk, follow=True)
 
         self.assertEqual(response.status_code, 200)
         self.assertEqual(response.data['title'], 'My List')
-
         items = response.data['items']
         self.assertEqual(len(items), 2)
+
+    def test_get_list_by_title(self):
+
+        l = List.objects.create(title='My List', description='Blah', owner=self.bob)
+        l.items.create(caption='First', description='Not blank')
+        l.items.create(caption='Second', description='Not blank')
+
+
+        response = self.client.get('/list/%s/get_list_by_title' % l.title, follow=True)
+
+        self.assertEqual(response.status_code, 200)
+        self.assertEqual(len(response.data), 1)
+
+    def test_get_list_by_user(self):
+        l = List.objects.create(title='My List', description='Blah', owner=self.bob)
+        response = self.client.get('/list/%s/get_list_by_user' % l.owner.username, follow=True)
+
+        self.assertEqual(response.status_code, 200)
+        self.assertEqual(len(response.data), 1)
+
+
 
 
 class TestItems(APITestCase):
