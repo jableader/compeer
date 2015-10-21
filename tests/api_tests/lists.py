@@ -7,16 +7,20 @@ from rest_framework.test import APIClient, APITestCase
 
 from api.models import *
 
-class TestLists(APITestCase):
-
-    def setUp(self):
+def createBobAndBill(owner):
         bob = User.objects.create_user('Bob', 'bob@b.com', 'bobs_password')
         bob.save()
 
         bill = User.objects.create_user('Bill', 'bill@b.com', 'bills_password')
         bill.save()
 
-        self.bill, self.bob = bill, bob
+        owner.bill, owner.bob = bill, bob
+
+
+class TestLists(APITestCase):
+
+    def setUp(self):
+        createBobAndBill(self)
 
     def test_create_list(self):
         self.client.force_authenticate(user=self.bob)
@@ -56,30 +60,37 @@ class TestLists(APITestCase):
         self.assertEqual(len(items), 2)
 
     def test_get_list_by_title(self):
+        first = List.objects.create(title="First", description="Blah blah", owner=self.bob)
+        second = List.objects.create(title="Second", description="Blah blah", owner=self.bob)
+        third = List.objects.create(title="Third", description="Blah blah", owner=self.bob)
 
-        l = List.objects.create(title='My List', description='Blah', owner=self.bob)
-        l.items.create(caption='First', description='Not blank')
-        l.items.create(caption='Second', description='Not blank')
-
-
-        response = self.client.get('/list/%s/get_list_by_title' % l.title, follow=True)
-
+        response = self.client.get('/list', data={'title': 'irs'}, follow=True)
         self.assertEqual(response.status_code, 200)
         self.assertEqual(len(response.data), 1)
+
+    def test_get_list_by_title_multiple_results(self):
+        first = List.objects.create(title="First", description="Blah blah", owner=self.bob)
+        second = List.objects.create(title="Second", description="Blah blah", owner=self.bob)
+        third = List.objects.create(title="Third", description="Blah blah", owner=self.bob)
+
+        response = self.client.get('/list', data={'title': 'i'}, follow=True)
+        self.assertEqual(response.status_code, 200)
+        self.assertEqual(len(response.data), 2)
 
     def test_get_list_by_user(self):
-        l = List.objects.create(title='My List', description='Blah', owner=self.bob)
-        response = self.client.get('/list/%s/get_list_by_user' % l.owner.username, follow=True)
+        List.objects.create(title='Bobs List', description='Blah', owner=self.bob)
+        List.objects.create(title='Bills List', description='Blah', owner=self.bill)
+        response = self.client.get('/list', data={'owner': self.bob.pk}, follow=True)
 
         self.assertEqual(response.status_code, 200)
         self.assertEqual(len(response.data), 1)
-
+        self.assertEqual(response.data[0]['title'], 'Bobs List')
 
 
 
 class TestItems(APITestCase):
     def setUp(self):
-        TestLists.setUp(self) # Yeah I know, its odd
+        createBobAndBill(self)
 
     def test_add_item_to_list(self):
         l = List.objects.create(title='My List', description='Blah', owner=self.bob)

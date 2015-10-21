@@ -115,20 +115,14 @@ class ListViewSet(viewsets.ModelViewSet):
         serializer.save()
         return Response(status=status.HTTP_200_OK)
 
-    @detail_route(methods=['GET'])
-    def get_list_by_title(self, request, pk=None):
-        list = get_list_or_404(models.List, title = pk)
-        list_serializer = ListSerializer(list, many=True)
-        return Response(list_serializer.data)
+    def get_queryset(self):
+        query = models.List.objects.all()
+        owner = self.request.query_params.get('owner', None)
+        if owner is not None:
+            query = query.filter(owner=owner)
 
-    @detail_route(methods=['GET'])
-    def get_list_by_user(self, request, pk=None):
-        user_id=User.objects.get(username=pk).id
+        title = self.request.query_params.get('title', None)
+        if title is not None:
+            query = query.filter(title__icontains=title)
 
-        list = get_list_or_404(models.List, owner_id = user_id)
-        list_serializer = ListSerializer(list, many=True)
-        return Response(list_serializer.data)
-
-
-
-
+        return query
