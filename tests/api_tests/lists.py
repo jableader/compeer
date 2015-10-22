@@ -56,6 +56,7 @@ class TestLists(APITestCase):
 
         self.assertEqual(response.status_code, 200)
         self.assertEqual(response.data['title'], 'My List')
+        self.assertEqual(response.data['owner'], 'Bob')
         items = response.data['items']
         self.assertEqual(len(items), 2)
 
@@ -80,7 +81,7 @@ class TestLists(APITestCase):
     def test_get_list_by_user(self):
         List.objects.create(title='Bobs List', description='Blah', owner=self.bob)
         List.objects.create(title='Bills List', description='Blah', owner=self.bill)
-        response = self.client.get('/list', data={'owner': self.bob.pk}, follow=True)
+        response = self.client.get('/list', data={'owner': self.bob.username}, follow=True)
 
         self.assertEqual(response.status_code, 200)
         self.assertEqual(len(response.data), 1)

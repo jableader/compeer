@@ -61,11 +61,10 @@ class ItemViewSet(viewsets.ModelViewSet):
 
 class ListSerializer(serializers.ModelSerializer):
     items = ItemSerializer(many=True, read_only=True)
+    owner = serializers.SlugRelatedField(slug_field='username', read_only=True)
 
     class Meta:
         model = models.List
-        exclude = ('owner',)
-        extra_kwargs = {'owner': {'write_only': True}}
 
     def create(self, validated_data):
         model = super(ListSerializer, self).create(validated_data)
@@ -119,7 +118,7 @@ class ListViewSet(viewsets.ModelViewSet):
         query = models.List.objects.all()
         owner = self.request.query_params.get('owner', None)
         if owner is not None:
-            query = query.filter(owner=owner)
+            query = query.filter(owner__username__iexact=owner)
 
         title = self.request.query_params.get('title', None)
         if title is not None:
