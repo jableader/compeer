@@ -35,7 +35,7 @@ NOTES:
 
 ### Lists
 
-You can POST to create lists, or GET to get lists. GET returns the items as nested values.
+You can POST to create lists, or GET to get lists. GET returns the items as nested values, sorted by their rank.
 
 General structure (note the score / rank is not included right now):
 ```javascript

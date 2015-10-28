@@ -32,6 +32,21 @@ class TestLists(APITestCase):
         self.assertIsNotNone(created_list)
         self.assertEqual(created_list.owner, self.bob)
 
+    def test_orders_by_score(self):
+        list = List.objects.create(title='Dummy List', description='Not blank', owner=self.bob)
+        list.items.create(caption='Second', description='Not blank', score=5)
+        list.items.create(caption='First', description='Not blank', score=10)
+        list.items.create(caption='Third', description='Not blank', score=2)
+
+        response = self.client.get('/list/%d/' % list.pk)
+
+        expected = ['First', 'Second', 'Third']
+        actual = [item['caption'] for item in response.data['items']]
+
+        self.assertEqual(expected, actual)
+
+
+
     def test_cant_change_owner(self):
         l = List.objects.create(title='My List', description='Blah', owner=self.bob)
 

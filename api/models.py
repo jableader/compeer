@@ -17,3 +17,6 @@ class Item(models.Model):
     image = models.ImageField(null=True)
     description = models.CharField(max_length=140)
     score = models.IntegerField(default=0)
+
+    class Meta:
+        ordering = ['-score']
