@@ -179,13 +179,13 @@ CMP		| Jacob		| CS106   | User  | register          | So I can have an account t
 ### Iteration 2
 Status	| Resource	| Ref     | As a  | I want to         | So I can
 ------- | ---------	| ------- | ----- | ----------------- | ---------------------------------
-ASN		| Lee		| CS104   | User  | search for a list | find the list I want
-OPN		| 			| CS110   | User  | select the list I would like to vote on | vote on things I care about
+CMP		| Lee		| CS104   | User  | search for a list | find the list I want
+CMP		| 			| CS110   | User  | select the list I would like to vote on | vote on things I care about
 CMP		| Jacob		| CS101   | User  | create a list     | add items to vote
 
 ### Iteration 3
 Done?	| Resource	| Ref     | As a  | I want to         | So I can
 ------- | ---------	| ------- | ----- | ----------------- | ---------------------------------
-WRK		| Jacob		| CS107   | User  | vote on items/lists | engage in community voting
-OPN		| 			| CS109   | User  | view a list's items sorted by rank/score | see the best/worst items on the list
-OPN		| 			| CS301   | LM    | view lists of which I am a LM | manage my lists
+CMP		| Jacob		| CS107   | User  | vote on items/lists | engage in community voting
+CMP		| 			| CS109   | User  | view a list's items sorted by rank/score | see the best/worst items on the list
+CMP		| 			| CS301   | LM    | view lists of which I am a LM | manage my lists
