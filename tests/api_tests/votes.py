@@ -1,5 +1,7 @@
 from api.models import *
 
+from api.votes import encrypt, decrypt
+
 __author__ = 'Jableader'
 
 from rest_framework.test import APITestCase
@@ -16,6 +18,13 @@ class TestVotes(APITestCase):
         list.items.create(caption='Blender', description='Blend things')
 
         self.bob, self.list = bob, list
+
+    def test_encrypt(self):
+        data = bytes([i % 256 for i in range(1000)])
+        decrypted = decrypt(encrypt(data))
+
+        self.assertEqual(data, decrypted)
+
 
     def test_get_pair(self):
         response = self.client.get('/list/%d/get_pair' % self.list.pk, follow=True)
@@ -59,3 +68,22 @@ class TestVotes(APITestCase):
 
         winner.refresh_from_db()
         self.assertEqual(0, winner.score)
+
+    def test_old_token(self):
+        token, pair = self.get_pair()
+        winner, loser = pair
+
+        import time
+        time.sleep(45)
+
+        vote_data = {'vote_token': token, 'winner': winner.pk, 'loser': loser.pk}
+
+        response = self.client.post('/list/%d/vote/' % self.list.pk, data=vote_data)
+
+        self.assertEqual(400, response.status_code, msg=str(response.data))
+
+        winner.refresh_from_db()
+        loser.refresh_from_db()
+
+        self.assertEqual(0, winner.score)
+        self.assertEqual(0, loser.score)
